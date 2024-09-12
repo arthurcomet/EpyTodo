@@ -20,10 +20,26 @@ function insertIntoDb(email, name, firstname, password, res) {
                 return res.status(500).json({ error: error });
             }
             const token = jwt.sign({ id: results.insertId }, process.env.SECRET, { expiresIn: "1h" });
-            res.status(201).json({ msg: "User registered successfully", token: token });
+            res.status(201).json({ token: "Token of the newly registered user " + token });
         }
     );
-};
+}
+
+function checkIfEmailExists(email, callback) {
+    pool.query(
+        'SELECT * FROM user WHERE email = ?',
+        [email],
+        (error, results) => {
+            if (error) {
+                return callback(error, null);
+            }
+            if (results.length > 0) {
+                return callback(null, true);
+            }
+            return callback(null, false);
+        }
+    );
+}
 
 router.post('/register', async (req, res) => {
     const { email, name, firstname, password } = req.body;
@@ -31,12 +47,21 @@ router.post('/register', async (req, res) => {
     if (!email || !name || !firstname || !password) {
         return res.status(400).json({ msg: 'Bad parameter' });
     }
-    try {
-        const cryptedPassword = await bcrypt.hash(password, 10);
-        insertIntoDb(email, name, firstname, cryptedPassword, res);
-    } catch (error) {
-        internalServerError(res);
-    }
+
+    checkIfEmailExists(email, async (error, exists) => {
+        if (error) {
+            return internalServerError(res);
+        }
+        if (exists) {
+            return res.status(400).json({ msg: 'account already exists' });
+        }
+        try {
+            const cryptedPassword = await bcrypt.hash(password, 10);
+            insertIntoDb(email, name, firstname, cryptedPassword, res);
+        } catch (error) {
+            internalServerError(res);
+        }
+    });
 });
 
 //<---------------------------------------------------------------------->
@@ -59,7 +84,7 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ msg: 'Invalid credentials' });
         }
         const token = jwt.sign({ id: user.id }, process.env.SECRET, { expiresIn: "1h" });
-        res.status(200).json({ msg: 'Login successful', token: token });
+        res.status(200).json({ token: 'Token of the newly logged in user' + token });
     } catch (error) {
         internalServerError(res);
     }

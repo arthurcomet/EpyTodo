@@ -87,7 +87,7 @@ router.delete("/:id", (req, res) => {
         if (error) {
             return res.status(500).json({ error: 'Database query failed' });
         }
-        res.json({ message: 'User deleted successfully' });
+        res.json({ msg: 'succesfully deleted record number: ' + id });
     });
 });
 
