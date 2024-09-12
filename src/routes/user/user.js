@@ -80,4 +80,15 @@ router.put("/:id", (req, res) => {
     });
 });
 
+router.delete("/:id", (req, res) => {
+    const id = req.params.id;
+
+    pool.query('DELETE FROM user WHERE id = ?', [id], (error, results) => {
+        if (error) {
+            return res.status(500).json({ error: 'Database query failed' });
+        }
+        res.json({ message: 'User deleted successfully' });
+    });
+});
+
 module.exports = router;
