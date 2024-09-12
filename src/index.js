@@ -5,9 +5,6 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-console.log('Secret:', process.env.SECRET);
-console.log('Port:', process.env.PORT);
-
 app.use(express.json());
 
 const authRoutes = require('./routes/auth/auth');
