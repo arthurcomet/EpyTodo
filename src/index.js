@@ -8,11 +8,15 @@ const port = process.env.PORT || 3000;
 console.log('Secret:', process.env.SECRET);
 console.log('Port:', process.env.PORT);
 
-// Routes
-const authRoutes = require('./routes/auth/auth');
-
 app.use(express.json());
+
+const authRoutes = require('./routes/auth/auth');
+const userRoutes = require('./routes/user/user');
+
+const authenticateJWT = require('./middleware/auth');
+
 app.use('/', authRoutes);
+app.use('/user', authenticateJWT, userRoutes);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
